@@ -3,72 +3,98 @@ using DataStructures;
 
 namespace DataStructures.Tests
 {
+
     [TestClass]
-    public class DynamicArrayTest
+    public class DynamicArrayTests
     {
         [TestMethod]
-        public void TestDynamicArrayConstructor()
+        public void Constructor_WithValidCapacity_InitializesDynamicArray()
         {
-            // Arrange
             int capacity = 10;
-
-            // Act
             var dynamicArray = new DynamicArray<int>(capacity);
 
-            // Assert
             Assert.AreEqual(capacity, dynamicArray.GetCapacity());
             Assert.AreEqual(0, dynamicArray.GetSize());
         }
 
         [TestMethod]
-        public void TestDynamicArrayPushBack()
+        [DataRow(-1)]
+        [DataRow(0)]
+        public void Constructor_WithInvalidCapacity_ThrowsArgumentException(int capacity)
         {
-            // Arrange
-            var dynamicArray = new DynamicArray<int>(3);
-
-            // Act
-            dynamicArray.PushBack(42);
-
-            // Assert
-            Assert.AreEqual(1, dynamicArray.GetSize());
-            Assert.AreEqual(3, dynamicArray.GetCapacity()); // Capacity should not change yet
-            Assert.AreEqual(42, dynamicArray.Get(0));
+            Assert.ThrowsException<ArgumentException>(() => new DynamicArray<int>(capacity));
         }
 
         [TestMethod]
-        public void TestDynamicArrayResize()
+        public void PushBack_WithEnoughCapacity_AddsElement()
         {
-            // Arrange
-            var dynamicArray = new DynamicArray<int>(2);
-
-            // Act
+            var dynamicArray = new DynamicArray<int>(5);
             dynamicArray.PushBack(1);
-            dynamicArray.PushBack(2);
-            dynamicArray.PushBack(3); // This will trigger a resize
 
-            // Assert
-            Assert.AreEqual(3, dynamicArray.GetSize());
-            Assert.AreEqual(4, dynamicArray.GetCapacity()); // Capacity should double to accommodate the third element
             Assert.AreEqual(1, dynamicArray.Get(0));
-            Assert.AreEqual(2, dynamicArray.Get(1));
-            Assert.AreEqual(3, dynamicArray.Get(2));
+            Assert.AreEqual(1, dynamicArray.GetSize());
         }
 
         [TestMethod]
-        public void TestDynamicArrayPopBack()
+        public void PushBack_WithFullCapacity_ResizesAndAddsElement()
         {
-            // Arrange
-            var dynamicArray = new DynamicArray<int>(3);
+            var dynamicArray = new DynamicArray<int>(1);
+            dynamicArray.PushBack(1);
+
+            Assert.AreEqual(1, dynamicArray.Get(0));
+            Assert.AreEqual(1, dynamicArray.GetSize());
+
+            dynamicArray.PushBack(2); // This should trigger a resize
+
+            Assert.AreEqual(2, dynamicArray.Get(1));
+            Assert.AreEqual(2, dynamicArray.GetCapacity());
+            Assert.AreEqual(2, dynamicArray.GetSize());
+        }
+
+        [TestMethod]
+        public void PopBack_WithElements_RemovesLastElement()
+        {
+            var dynamicArray = new DynamicArray<int>(5);
+            dynamicArray.PushBack(1);
+            dynamicArray.PushBack(2);
+            dynamicArray.PushBack(3);
+
+            var popped = dynamicArray.PopBack();
+
+            Assert.AreEqual(3, popped);
+            Assert.AreEqual(2, dynamicArray.GetSize());
+        }
+
+        [TestMethod]
+        public void PopBack_WithEmptyArray_ThrowsInvalidOperationException()
+        {
+            var dynamicArray = new DynamicArray<int>(5);
+
+            Assert.ThrowsException<InvalidOperationException>(() => dynamicArray.PopBack());
+        }
+
+        [TestMethod]
+        public void Set_WithValidIndex_SetsElement()
+        {
+            var dynamicArray = new DynamicArray<int>(5);
             dynamicArray.PushBack(1);
             dynamicArray.PushBack(2);
 
-            // Act
-            int poppedValue = dynamicArray.PopBack();
+            dynamicArray.Set(1, 42);
 
-            // Assert
-            Assert.AreEqual(1, dynamicArray.GetSize());
-            Assert.AreEqual(2, poppedValue);
+            Assert.AreEqual(42, dynamicArray.Get(1));
         }
 
+        [TestMethod]
+        [DataRow(-1)]
+        [DataRow(2)]
+        public void Set_WithInvalidIndex_ThrowsIndexOutOfRangeException(int index)
+        {
+            var dynamicArray = new DynamicArray<int>(5);
+            dynamicArray.PushBack(1);
+
+            Assert.ThrowsException<IndexOutOfRangeException>(() => dynamicArray.Set(index, 42));
+        }
     }
+
 }
